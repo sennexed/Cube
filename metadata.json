@@ -1,0 +1,8 @@
+{
+  "name": "Minecraft Server Web Console & Admin Control Panel",
+  "description": "Production-ready Minecraft RCON Web Console and Admin Dashboard tailored for ScalaCube and dedicated servers with live terminal, player matrix, world controls, and telemetry.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

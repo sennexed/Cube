@@ -1,0 +1,182 @@
+================================================================================
+  MINECRAFT SERVER WEB CONSOLE & ADMIN CONTROL PANEL (SCALACUBE RCON)
+  Complete Operational Guide & Architecture Documentation
+================================================================================
+
+1. OVERVIEW & DUAL-MODE ARCHITECTURE
+--------------------------------------------------------------------------------
+This application provides a web-based administration console for Minecraft Java
+servers (Paper, Purpur, Spigot, or Vanilla) hosted on ScalaCube or private VPS
+hosts using the standard Minecraft RCON (Remote Console) protocol.
+
+The system is built around a Dual-Mode design:
+
+  A. SIMULATED SERVER MODE (Zero Setup Required)
+     - Activated by clicking "Simulated Server" in the top bar.
+     - Lets you immediately test every feature without having a running server.
+     - A built-in simulation engine responds to Minecraft commands:
+       * /gamemode <mode> <player> (updates the player's gamemode badge)
+       * /op and /deop <player> (updates the player's OP badge)
+       * /give <player> <item> <amount> (confirms item distribution)
+       * /tp <player> <destination> (updates player coordinates)
+       * /time set <day|noon|midnight> (updates world time)
+       * /weather <clear|rain|thunder> (updates weather condition)
+       * /gamerule <rule> <true|false> (toggles rule state)
+       * /kick and /ban <player> <reason> (removes player from matrix)
+       * /pardon <player> (unbans player)
+       * /say <message> (broadcasts announcements)
+     - Includes realistic server tick jitter, memory fluctuations, and
+       ambient player chat/advancements.
+
+  B. LIVE RCON BRIDGE MODE (Real ScalaCube Server)
+     - Activated by clicking "Live RCON Bridge" in the top bar.
+     - Connects your web browser to the Node.js backend bridge via WebSockets
+       (/ws) or REST (/api/rcon/*).
+     - The backend bridge maintains a persistent TCP RCON session with your
+       Minecraft server on port 25575 (or custom allocated port).
+     - All console commands are sent in real-time, and log outputs stream
+       directly to the browser.
+
+
+2. THREE-COLUMN DASHBOARD BREAKDOWN
+--------------------------------------------------------------------------------
+
+  [ TOP BAR & TELEMETRY ]
+  ----------------------------------------------------------------------
+  - Status Indicator: Online (Emerald), Simulated (Cyan), Connecting (Amber).
+  - Server IP: One-click copy for your server hostname and port.
+  - Mode Switcher: 1-click toggle between Simulated Server & Live Bridge.
+  - Audio Button: Mute/unmute tactile sound effects for commands and clicks.
+  - 4 Telemetry Cards:
+      1. CPU Usage (%): Real-time core load tracking.
+      2. RAM Allocation (GB): Heap usage (e.g. 4.2 / 8.0 GB DDR4 ECC).
+      3. Server TPS: Precise tick rate meter (20.0 TPS with color thresholds:
+         Green >= 19.5 TPS, Amber 16.0-19.4 TPS, Red < 16.0 TPS).
+      4. Active Players: Live slot counter (e.g. 5 / 20 slots).
+
+  [ LEFT PANEL: World & Gamerule Controls ]
+  ----------------------------------------------------------------------
+  - Time Macros: One-click buttons for Day (1000), Noon (6000), Midnight (18000).
+  - Weather Macros: Clear sky, Rain, Thunderstorms.
+  - Maintenance:
+      * save-all flush: Immediately writes world chunks to disk.
+      * list: Queries currently connected players.
+  - Server Broadcast (/say):
+      * Type any announcement to broadcast to all players in chat.
+  - Live Gamerules:
+      * keepInventory: Toggle keeping items and XP upon death.
+      * mobGriefing: Toggle creeper and ghast block damage.
+      * doDaylightCycle: Freeze or unfreeze the day/night cycle.
+      * doWeatherCycle: Toggle natural weather transitions.
+      * pvp: Enable or disable player combat.
+      * doInsomnia: Toggle phantom spawning.
+      * naturalRegeneration: Health recovery from full hunger.
+      * showDeathMessages: Public broadcast of player deaths.
+
+  [ CENTER PANEL: Live RCON Terminal ]
+  ----------------------------------------------------------------------
+  - Color-Coded Log Stream:
+      * [INFO] in cyan
+      * [WARN] in amber
+      * [ERROR] in crimson
+      * [RCON] in emerald for sent commands
+  - Filter Tabs: Filter by All, Warn/Err, Player Events, or RCON Commands.
+  - Quick Search: Real-time search filter across log messages and timestamps.
+  - Auto-Scroll / Follow: Keeps the newest logs in view.
+  - Smart Command Input:
+      * Automatically strips any accidental leading slash ("/" or "/op" -> "op").
+      * Up/Down Arrow keys cycle through your sent command history.
+      * Autocomplete Suggestion Chips for instant one-click command templates.
+
+  [ RIGHT PANEL: Targeted Player Matrix ]
+  ----------------------------------------------------------------------
+  - Active Player Dropdown & Visual List:
+      * Displays authentic Minecraft 2D skin avatars via mc-heads.net.
+      * Shows real-time ping (latency), role (OP/Member), and gamemode.
+  - One-Click Player Actions:
+      * Operator Toggle: [Grant OP] (/op) and [Revoke OP] (/deop).
+      * Gamemode Switcher: Segmented buttons for Survival, Creative,
+        Adventure, and Spectator.
+      * Vitals: [Heal & Feed] (applies instant health & saturation),
+        [Clear Inventory] (/clear), and [Kill] (/kill).
+      * Teleportation: Teleport selected player to another online player or
+        to exact coordinates (X Y Z), with a 1-click "Spawn (0,64,0)" preset.
+      * Give Item Drawer: Browse categorized Minecraft items (Weapons, Tools,
+        Armor, Minerals, Food, Utility, Redstone), select stack size (1 to 64),
+        or type custom item IDs.
+      * Moderation: Modals for [Kick Player] and [Ban Player] with quick
+        preset reasons ("Griefing", "X-Ray", "Chat Spam") plus [Pardon/Unban].
+
+
+3. HOW TO CONNECT TO A SCALACUBE MINECRAFT SERVER
+--------------------------------------------------------------------------------
+Follow these 4 simple steps to enable RCON on your ScalaCube server:
+
+  Step 1: Open ScalaCube Control Panel
+          - Log into https://scalacube.com and open your server dashboard.
+          - Click "Stop" to temporarily halt the Minecraft server.
+
+  Step 2: Edit server.properties
+          - In the left sidebar, click "File Manager".
+          - Locate and click on the file named "server.properties".
+          - Verify or add the following three configuration lines:
+              enable-rcon=true
+              rcon.port=25575
+              rcon.password=YourSecretPasswordHere
+
+  Step 3: Save & Restart
+          - Click "Save" in the file editor.
+          - Return to the ScalaCube dashboard and click "Start".
+
+  Step 4: Connect from the Web Console
+          - In the web console, click the "Settings" button in the top bar.
+          - Enter:
+              * Server IP / Hostname: Your ScalaCube domain or numerical IP
+              * RCON Port: 25575 (or your allocated port)
+              * RCON Password: Your password configured in server.properties
+          - Click "Test & Connect to Server".
+          - You are now live! Commands and logs will stream in real-time.
+
+
+4. HOW TO RUN THE STANDALONE DELIVERABLES
+--------------------------------------------------------------------------------
+Two standalone deliverables are included for running the console anywhere:
+
+  FILE 1: standalone/index.html (Single-File Frontend)
+  ----------------------------------------------------
+  - A self-contained single-file HTML frontend.
+  - Uses Tailwind CSS CDN, Lucide Icons, and Vanilla JavaScript.
+  - Can be opened directly in any web browser by double-clicking it.
+  - Works offline in Simulated Server mode and can connect to any WebSocket
+    RCON bridge on ws://localhost:3001/ws.
+
+  FILE 2: server.js or standalone/server.js (Node.js Backend Bridge)
+  -----------------------------------------------------------------
+  - A lightweight backend bridge using Express, ws, and rcon-client.
+  - How to run it:
+      1. Open a terminal on your computer or server.
+      2. Install the 3 dependencies:
+           npm install express ws rcon-client
+      3. Start the server:
+           node server.js
+      4. Open your browser to:
+           http://localhost:3001
+  - The bridge will serve index.html and establish live RCON connections!
+
+
+5. TROUBLESHOOTING & FAQ
+--------------------------------------------------------------------------------
+  Q: Why does my command not execute when I click a button?
+  A: If you are in "Live RCON Bridge" mode, ensure your server is connected
+     via the Settings modal. If not connected, toggle back to "Simulated Server"
+     mode in the top bar to test actions locally.
+
+  Q: What if my ScalaCube server uses a different RCON port?
+  A: Some shared hosts assign random ports (e.g. 28015 instead of 25575).
+     Check your ScalaCube "server.properties" for the exact "rcon.port" value
+     and enter it into the Settings modal.
+
+  Q: Can I use this on mobile phones or tablets?
+  A: Yes! The layout is fully responsive. On smaller screens, the 3 columns
+     stack neatly with touch-friendly action buttons and scrollable panels.
+================================================================================
